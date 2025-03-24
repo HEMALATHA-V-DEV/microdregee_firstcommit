@@ -1,0 +1,40 @@
+pipeline {
+    agent any
+    stages {
+        stage('Clone') {
+            steps {
+                git 'https://github.com/your-repo/todo-app.git'
+            }
+        }
+        stage('Build') {
+            steps {
+                sh 'mvn clean package'
+            }
+        }
+        stage('Static Code Analysis') {
+            steps {
+                sh 'mvn sonar:sonar'
+            }
+        }
+        stage('Dependency Check') {
+            steps {
+                sh 'mvn dependency-check:aggregate'
+            }
+        }
+        stage('Docker Build') {
+            steps {
+                sh 'docker build -t todo-app .'
+            }
+        }
+        stage('Docker Scan') {
+            steps {
+                sh 'trivy image todo-app'
+            }
+        }
+        stage('Deploy') {
+            steps {
+                sh 'docker run -d -p 8080:8080 todo-app'
+            }
+        }
+    }
+}
